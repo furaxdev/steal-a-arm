@@ -30,18 +30,20 @@ src/
 
 ## Ce qui est déjà fonctionnel
 
-- Génération procédurale du monde (plots + 3 arènes)
-- Attribution d'un plot par joueur
-- Génération d'armes aléatoires pondérées par rareté
-- Vol d'arme avec temps de maintien et interruption par le propriétaire
-- Sauvegarde du cash + inventaire via DataStore
-- Toast de duel toutes les 5 minutes, appariement aléatoire, téléportation en arène
-- Combat au corps-à-corps avec dégâts selon l'arme équipée
-- HUD (cash, inventaire, minuteur de duel, résultat)
+- Génération procédurale du monde (plots + 3 arènes + podium de classement)
+- Attribution d'un plot par joueur, avec panneau affichant son niveau
+- 10 armes réparties en 6 raretés (Common → Mythic), avec lueur/particules pour les plus rares
+- Vol d'arme avec temps de maintien, interruption par le propriétaire, support clavier **et** bouton tactile mobile
+- Boutique : vendre ses doublons, choisir l'arme équipée, améliorer son plot (plus d'armes + spawn plus rapide, jusqu'au niveau 10)
+- Sauvegarde du cash + inventaire + niveau de plot + arme équipée via DataStore
+- Toast de duel toutes les 5 minutes, appariement aléatoire, téléportation en arène, combat au corps-à-corps selon l'arme équipée
+- Classement "Top Voleurs" en leaderstats (visible dans la liste de joueurs Roblox) + podium physique dans le monde, mis à jour via OrderedDataStore
+- Effets sonores (vol réussi, coup porté, invitation/début/fin de duel, achat en boutique) — tous les IDs sont centralisés dans `SoundIds.luau`, remplaçables facilement
+- HUD (cash, nombre d'armes, arme équipée, minuteur et résultat de duel)
 
 ## Pistes pour aller plus loin
 
-- Rebirths / zones débloquables à la Steal a Brainrot
-- Classement des voleurs/duellistes (leaderboard)
-- Animations d'attaque et VFX sur les armes
+- Animations d'attaque dédiées par arme (actuellement coup générique)
 - Système de trade entre joueurs
+- Plus de zones / mondes débloqués par rebirth complet (reset + multiplicateur global)
+- Classement en temps réel pendant le duel (barres de vie visibles pour les deux joueurs)

@@ -27,5 +27,17 @@ return {
 	DUEL_WIN_REWARD = 150,
 	DUEL_LOSE_REWARD = 20,
 
+	-- Amélioration de plot (rebirth léger : plus d'armes, génération plus rapide)
+	MAX_PLOT_LEVEL = 10,
+	PLOT_UPGRADE_BASE_COST = 200,
+	PLOT_UPGRADE_COST_GROWTH = 1.6,
+	PLOT_UPGRADE_EXTRA_SLOTS = 1, -- slots d'armes en plus par niveau
+	PLOT_UPGRADE_SPEED_BONUS = 0.12, -- réduction de l'intervalle de spawn par niveau (12%/niveau)
+
+	-- Classement (leaderstats + podium physique)
+	LEADERBOARD_DATASTORE_NAME = "VoleUneArme_TopCash_v1",
+	LEADERBOARD_REFRESH_INTERVAL = 30,
+	LEADERBOARD_TOP_COUNT = 10,
+
 	DATASTORE_NAME = "VoleUneArme_PlayerData_v1",
 }

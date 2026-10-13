@@ -14,7 +14,7 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 220, 0, 90)
+frame.Size = UDim2.new(0, 240, 0, 104)
 frame.Position = UDim2.new(0, 12, 0, 12)
 frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 frame.BackgroundTransparency = 0.25
@@ -36,35 +36,40 @@ cashLabel.Text = "💰 0"
 cashLabel.Parent = frame
 
 local inventoryLabel = Instance.new("TextLabel")
-inventoryLabel.Size = UDim2.new(1, -16, 0, 50)
+inventoryLabel.Size = UDim2.new(1, -16, 0, 24)
 inventoryLabel.Position = UDim2.new(0, 8, 0, 36)
 inventoryLabel.BackgroundTransparency = 1
 inventoryLabel.Font = Enum.Font.Gotham
 inventoryLabel.TextColor3 = Color3.fromRGB(230, 230, 230)
 inventoryLabel.TextXAlignment = Enum.TextXAlignment.Left
-inventoryLabel.TextYAlignment = Enum.TextYAlignment.Top
 inventoryLabel.TextWrapped = true
-inventoryLabel.TextScaled = false
 inventoryLabel.TextSize = 14
 inventoryLabel.Text = "Inventaire : vide"
 inventoryLabel.Parent = frame
+
+local equippedLabel = Instance.new("TextLabel")
+equippedLabel.Size = UDim2.new(1, -16, 0, 22)
+equippedLabel.Position = UDim2.new(0, 8, 0, 60)
+equippedLabel.BackgroundTransparency = 1
+equippedLabel.Font = Enum.Font.GothamBold
+equippedLabel.TextColor3 = Color3.fromRGB(255, 200, 80)
+equippedLabel.TextXAlignment = Enum.TextXAlignment.Left
+equippedLabel.TextWrapped = true
+equippedLabel.TextSize = 14
+equippedLabel.Text = "⚔ Rien équipé"
+equippedLabel.Parent = frame
 
 remotes:WaitForChild("UpdateCash").OnClientEvent:Connect(function(cash: number)
 	cashLabel.Text = "💰 " .. tostring(cash)
 end)
 
+local weaponCount = 0
 remotes:WaitForChild("UpdateInventory").OnClientEvent:Connect(function(inventory: { string })
-	local counts: { [string]: number } = {}
-	for _, id in inventory do
-		counts[id] = (counts[id] or 0) + 1
-	end
+	weaponCount = #inventory
+	inventoryLabel.Text = "Armes possédées : " .. weaponCount
+end)
 
-	local parts = {}
-	for id, count in counts do
-		local def = WeaponData.get(id)
-		local name = def and def.name or id
-		table.insert(parts, name .. " x" .. count)
-	end
-
-	inventoryLabel.Text = #parts > 0 and table.concat(parts, " · ") or "Inventaire : vide"
+remotes:WaitForChild("UpdateShopInfo").OnClientEvent:Connect(function(info: { equipped: string })
+	local def = WeaponData.get(info.equipped)
+	equippedLabel.Text = "⚔ " .. (def and def.name or info.equipped)
 end)

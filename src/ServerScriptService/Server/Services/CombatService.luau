@@ -73,6 +73,7 @@ end
 
 function CombatService.init(remotes: Folder)
 	local attackRemote = remotes:WaitForChild("Attack")
+	local playSound = remotes:WaitForChild("PlaySound")
 
 	attackRemote.OnServerEvent:Connect(function(attacker: Player)
 		local now = os.clock()
@@ -115,6 +116,8 @@ function CombatService.init(remotes: Folder)
 
 				if targetHrp and humanoid and (targetHrp.Position - hrp.Position).Magnitude <= ATTACK_RANGE then
 					humanoid:TakeDamage(def.damage)
+					playSound:FireClient(attacker, "Hit")
+					playSound:FireClient(target, "Hit")
 				end
 			end
 		end

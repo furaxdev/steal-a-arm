@@ -1,7 +1,7 @@
 -- Détecte les armes volables à proximité, affiche un prompt "E pour voler" + barre de progression.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UserInputService = game:GetService("UserInputService")
+local ContextActionService = game:GetService("ContextActionService")
 local RunService = game:GetService("RunService")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
@@ -85,21 +85,22 @@ RunService.Heartbeat:Connect(function()
 	barBg.Visible = nearestPickup ~= nil and holdingKey
 end)
 
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-	if gameProcessed then
-		return
-	end
-	if input.KeyCode == Enum.KeyCode.E and nearestPickup then
-		holdingKey = true
-		requestSteal:FireServer(nearestPickup)
-	end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-	if input.KeyCode == Enum.KeyCode.E then
+-- ContextActionService gère à la fois la touche E (PC) et un bouton tactile (mobile)
+local function onStealAction(_, inputState: Enum.UserInputState)
+	if inputState == Enum.UserInputState.Begin then
+		if nearestPickup then
+			holdingKey = true
+			requestSteal:FireServer(nearestPickup)
+		end
+	elseif inputState == Enum.UserInputState.End or inputState == Enum.UserInputState.Cancel then
 		holdingKey = false
 	end
-end)
+	return Enum.ContextActionResult.Pass
+end
+
+ContextActionService:BindAction("StealWeapon", onStealAction, true, Enum.KeyCode.E)
+ContextActionService:SetTitle("StealWeapon", "Voler")
+ContextActionService:SetPosition("StealWeapon", UDim2.new(1, -140, 1, -180))
 
 stealProgress.OnClientEvent:Connect(function(progress: number, success: boolean?, weaponName: string?)
 	barFill.Size = UDim2.new(progress, 0, 1, 0)

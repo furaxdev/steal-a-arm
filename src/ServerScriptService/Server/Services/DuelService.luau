@@ -48,7 +48,19 @@ local function restorePlayer(player: Player, savedCFrame: CFrame?, combatService
 	end
 end
 
-local function runDuel(playerA: Player, playerB: Player, arena: any, remotes: Folder, dataService: any, combatService: any)
+local function updateAfterDuel(player: Player, dataService: any, remotes: Folder, leaderboardService: any)
+	local data = dataService.get(player)
+	if not data then
+		return
+	end
+	remotes:WaitForChild("UpdateCash"):FireClient(player, data.cash)
+	if leaderboardService then
+		leaderboardService.syncLeaderstat(player, data.cash)
+		leaderboardService.submitScore(player, data.cash)
+	end
+end
+
+local function runDuel(playerA: Player, playerB: Player, arena: any, remotes: Folder, dataService: any, combatService: any, leaderboardService: any)
 	playersInDuel[playerA.UserId] = true
 	playersInDuel[playerB.UserId] = true
 	arena.busy = true
@@ -76,12 +88,16 @@ local function runDuel(playerA: Player, playerB: Player, arena: any, remotes: Fo
 
 	local dataA = dataService.get(playerA)
 	local dataB = dataService.get(playerB)
-	local weaponA = dataA and dataA.inventory[#dataA.inventory] or "WoodenSword"
-	local weaponB = dataB and dataB.inventory[#dataB.inventory] or "WoodenSword"
+	local weaponA = dataA and dataA.equipped or "WoodenSword"
+	local weaponB = dataB and dataB.equipped or "WoodenSword"
 
 	combatService.equipWeapon(playerA, weaponA)
 	combatService.equipWeapon(playerB, weaponB)
 	combatService.allowDamageBetween(playerA, playerB)
+
+	local playSound = remotes:WaitForChild("PlaySound")
+	playSound:FireClient(playerA, "DuelStart")
+	playSound:FireClient(playerB, "DuelStart")
 
 	duelStart:FireClient(playerA, playerB.Name, GameConfig.DUEL_LENGTH)
 	duelStart:FireClient(playerB, playerA.Name, GameConfig.DUEL_LENGTH)
@@ -114,10 +130,14 @@ local function runDuel(playerA: Player, playerB: Player, arena: any, remotes: Fo
 	if winner then
 		dataService.addCash(winner, GameConfig.DUEL_WIN_REWARD)
 		duelEnd:FireClient(winner, true, GameConfig.DUEL_WIN_REWARD)
+		playSound:FireClient(winner, "DuelWin")
+		updateAfterDuel(winner, dataService, remotes, leaderboardService)
 	end
 	if loser then
 		dataService.addCash(loser, GameConfig.DUEL_LOSE_REWARD)
 		duelEnd:FireClient(loser, false, GameConfig.DUEL_LOSE_REWARD)
+		playSound:FireClient(loser, "DuelLose")
+		updateAfterDuel(loser, dataService, remotes, leaderboardService)
 	end
 	if not winner then
 		-- égalité au temps limite : petite récompense pour les deux
@@ -125,6 +145,8 @@ local function runDuel(playerA: Player, playerB: Player, arena: any, remotes: Fo
 		dataService.addCash(playerB, GameConfig.DUEL_LOSE_REWARD)
 		duelEnd:FireClient(playerA, false, GameConfig.DUEL_LOSE_REWARD)
 		duelEnd:FireClient(playerB, false, GameConfig.DUEL_LOSE_REWARD)
+		updateAfterDuel(playerA, dataService, remotes, leaderboardService)
+		updateAfterDuel(playerB, dataService, remotes, leaderboardService)
 	end
 
 	restorePlayer(playerA, savedA, combatService)
@@ -132,9 +154,10 @@ local function runDuel(playerA: Player, playerB: Player, arena: any, remotes: Fo
 	arena.busy = false
 end
 
-function DuelService.start(remotes: Folder, arenas: any, dataService: any, combatService: any)
+function DuelService.start(remotes: Folder, arenas: any, dataService: any, combatService: any, leaderboardService: any)
 	local duelInvite = remotes:WaitForChild("DuelInvite")
 	local duelResponse = remotes:WaitForChild("DuelResponse")
+	local playSoundRemote = remotes:WaitForChild("PlaySound")
 
 	task.spawn(function()
 		while true do
@@ -167,6 +190,7 @@ function DuelService.start(remotes: Folder, arenas: any, dataService: any, comba
 
 			for _, player in eligible do
 				duelInvite:FireClient(player, inviteId, GameConfig.DUEL_INVITE_TIMEOUT)
+				playSoundRemote:FireClient(player, "DuelInvite")
 			end
 
 			task.wait(GameConfig.DUEL_INVITE_TIMEOUT)
@@ -197,7 +221,7 @@ function DuelService.start(remotes: Folder, arenas: any, dataService: any, comba
 				pairIndex += 2
 
 				task.spawn(function()
-					runDuel(playerA, playerB, arena, remotes, dataService, combatService)
+					runDuel(playerA, playerB, arena, remotes, dataService, combatService, leaderboardService)
 				end)
 			end
 		end

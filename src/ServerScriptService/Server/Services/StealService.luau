@@ -13,6 +13,7 @@ function StealService.init(remotes: Folder, plotService: any, dataService: any)
 	local requestSteal = remotes:WaitForChild("RequestSteal")
 	local stealProgress = remotes:WaitForChild("StealProgress")
 	local updateInventory = remotes:WaitForChild("UpdateInventory")
+	local playSound = remotes:WaitForChild("PlaySound")
 
 	requestSteal.OnServerEvent:Connect(function(player: Player, pickup: Instance)
 		if activeSteals[player.UserId] then
@@ -82,6 +83,7 @@ function StealService.init(remotes: Folder, plotService: any, dataService: any)
 
 				local def = WeaponData.get(weaponId)
 				stealProgress:FireClient(player, 1, true, def and def.name or weaponId)
+				playSound:FireClient(player, "StealSuccess")
 			else
 				stealProgress:FireClient(player, 0, false)
 			end

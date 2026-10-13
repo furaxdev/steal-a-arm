@@ -7,10 +7,15 @@ local GameConfig = require(game:GetService("ReplicatedStorage").Shared.GameConfi
 local store = DataStoreService:GetDataStore(GameConfig.DATASTORE_NAME)
 
 local DataService = {}
-local cache: { [number]: { cash: number, inventory: { string } } } = {}
+local cache: { [number]: { cash: number, inventory: { string }, plotLevel: number, equipped: string } } = {}
 
 local function defaultData()
-	return { cash = GameConfig.STARTING_CASH, inventory = { "WoodenSword" } }
+	return {
+		cash = GameConfig.STARTING_CASH,
+		inventory = { "WoodenSword" },
+		plotLevel = 1,
+		equipped = "WoodenSword",
+	}
 end
 
 function DataService.load(player: Player)
@@ -20,6 +25,9 @@ function DataService.load(player: Player)
 	end)
 
 	if ok and result then
+		-- complète les champs manquants pour les anciennes sauvegardes (migration douce)
+		result.plotLevel = result.plotLevel or 1
+		result.equipped = result.equipped or result.inventory[#result.inventory] or "WoodenSword"
 		cache[userId] = result
 	else
 		cache[userId] = defaultData()
@@ -74,6 +82,57 @@ function DataService.removeOneWeapon(player: Player, weaponId: string): boolean
 	end
 
 	return false
+end
+
+function DataService.countOf(player: Player, weaponId: string): number
+	local data = cache[player.UserId]
+	if not data then
+		return 0
+	end
+
+	local count = 0
+	for _, id in data.inventory do
+		if id == weaponId then
+			count += 1
+		end
+	end
+	return count
+end
+
+function DataService.setEquipped(player: Player, weaponId: string): boolean
+	local data = cache[player.UserId]
+	if not data then
+		return false
+	end
+	if DataService.countOf(player, weaponId) == 0 then
+		return false
+	end
+	data.equipped = weaponId
+	return true
+end
+
+function DataService.getUpgradeCost(player: Player): number?
+	local data = cache[player.UserId]
+	if not data or data.plotLevel >= GameConfig.MAX_PLOT_LEVEL then
+		return nil
+	end
+	return math.floor(GameConfig.PLOT_UPGRADE_BASE_COST * (GameConfig.PLOT_UPGRADE_COST_GROWTH ^ (data.plotLevel - 1)))
+end
+
+function DataService.upgradePlot(player: Player): boolean
+	local data = cache[player.UserId]
+	if not data then
+		return false
+	end
+
+	local cost = DataService.getUpgradeCost(player)
+	if not cost or data.cash < cost then
+		return false
+	end
+
+	data.cash -= cost
+	data.plotLevel += 1
+	return true
 end
 
 Players.PlayerRemoving:Connect(function(player)

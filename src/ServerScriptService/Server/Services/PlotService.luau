@@ -9,16 +9,23 @@ function PlotService.init(worldPlots: any)
 	plots = worldPlots
 end
 
-function PlotService.assign(player: Player): number?
+function PlotService.assign(player: Player, plotLevel: number?): number?
 	for index, plot in plots do
 		if plot.owner == nil then
 			plot.owner = player
-			plot.sign.Text = player.DisplayName .. "\nvivier d'armes"
+			plot.sign.Text = player.DisplayName .. "\nNiveau " .. tostring(plotLevel or 1)
 			assignments[player.UserId] = index
 			return index
 		end
 	end
 	return nil
+end
+
+function PlotService.updateSign(player: Player, plotLevel: number)
+	local index = assignments[player.UserId]
+	if index and plots[index] then
+		plots[index].sign.Text = player.DisplayName .. "\nNiveau " .. tostring(plotLevel)
+	end
 end
 
 function PlotService.release(player: Player)

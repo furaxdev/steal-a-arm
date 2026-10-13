@@ -1,4 +1,5 @@
 -- Fait apparaître des armes à voler sur le présentoir (rack) de chaque plot, à intervalles réguliers.
+-- Vitesse et capacité du rack dépendent du niveau de plot du propriétaire (boutique).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local WeaponData = require(ReplicatedStorage.Shared.WeaponData)
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
@@ -7,6 +8,30 @@ local WeaponSpawnService = {}
 
 -- plotIndex -> { pickupPart, ... }
 local pickupsByPlot: { [number]: { BasePart } } = {}
+
+local function addVfx(pickup: BasePart, def: WeaponData.WeaponDef)
+	if def.glow then
+		local light = Instance.new("PointLight")
+		light.Color = def.color
+		light.Range = 10
+		light.Brightness = 2
+		light.Parent = pickup
+	end
+
+	if def.particles then
+		local attachment = Instance.new("Attachment")
+		attachment.Parent = pickup
+
+		local emitter = Instance.new("ParticleEmitter")
+		emitter.Color = ColorSequence.new(def.color)
+		emitter.Size = NumberSequence.new(0.3)
+		emitter.Lifetime = NumberRange.new(0.6, 1.2)
+		emitter.Rate = 12
+		emitter.Speed = NumberRange.new(1, 2)
+		emitter.SpreadAngle = Vector2.new(180, 180)
+		emitter.Parent = attachment
+	end
+end
 
 local function createPickup(weaponId: string, rack: BasePart, slot: number): BasePart
 	local def = WeaponData.get(weaponId)
@@ -23,9 +48,10 @@ local function createPickup(weaponId: string, rack: BasePart, slot: number): Bas
 	pickup.Parent = rack.Parent
 
 	pickup:SetAttribute("WeaponId", weaponId)
+	addVfx(pickup, def)
 
 	local sign = Instance.new("BillboardGui")
-	sign.Size = UDim2.new(0, 100, 0, 24)
+	sign.Size = UDim2.new(0, 110, 0, 26)
 	sign.StudsOffset = Vector3.new(0, 3, 0)
 	sign.AlwaysOnTop = true
 	sign.Parent = pickup
@@ -51,13 +77,21 @@ local function createPickup(weaponId: string, rack: BasePart, slot: number): Bas
 	return pickup
 end
 
-function WeaponSpawnService.start(plots: any)
+function WeaponSpawnService.start(plots: any, dataService: any)
 	for index, plot in plots do
 		pickupsByPlot[index] = {}
 
 		task.spawn(function()
 			while true do
-				task.wait(GameConfig.WEAPON_SPAWN_INTERVAL)
+				local owner = plot.owner
+				local ownerData = owner and dataService.get(owner)
+				local plotLevel = ownerData and ownerData.plotLevel or 1
+
+				local interval = GameConfig.WEAPON_SPAWN_INTERVAL
+					* (1 - math.min(0.7, GameConfig.PLOT_UPGRADE_SPEED_BONUS * (plotLevel - 1)))
+				local maxSlots = GameConfig.MAX_WEAPONS_PER_PLOT + GameConfig.PLOT_UPGRADE_EXTRA_SLOTS * (plotLevel - 1)
+
+				task.wait(interval)
 
 				local list = pickupsByPlot[index]
 				-- nettoyer les pickups détruits (volés) de la liste
@@ -67,7 +101,7 @@ function WeaponSpawnService.start(plots: any)
 					end
 				end
 
-				if plot.owner and #list < GameConfig.MAX_WEAPONS_PER_PLOT then
+				if plot.owner and #list < maxSlots then
 					local weaponId = WeaponData.getRandomWeaponId()
 					local pickup = createPickup(weaponId, plot.rack, #list)
 					table.insert(list, pickup)
