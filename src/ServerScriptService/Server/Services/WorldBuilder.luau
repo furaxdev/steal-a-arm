@@ -65,6 +65,26 @@ function WorldBuilder.buildPlots(worldFolder: Folder): { [number]: { base: BaseP
 	return plots
 end
 
+function WorldBuilder.buildSpawn(worldFolder: Folder): SpawnLocation
+	-- Zone dégagée devant les plots (ceux-ci s'étendent de z=-15 à z=15 environ) :
+	-- sans ce SpawnLocation explicite, Roblox peut faire apparaître les joueurs
+	-- n'importe où avant même que le monde généré n'existe, d'où la chute dans le vide.
+	local spawn = Instance.new("SpawnLocation")
+	spawn.Name = "MainSpawn"
+	spawn.Anchored = true
+	spawn.Neutral = true
+	spawn.Size = Vector3.new(16, 1, 16)
+	spawn.Position = Vector3.new(0, 0.5, -45)
+	spawn.Color = Color3.fromRGB(90, 150, 90)
+	spawn.Material = Enum.Material.Grass
+	spawn.TopSurface = Enum.SurfaceType.Smooth
+	spawn.BottomSurface = Enum.SurfaceType.Smooth
+	spawn.Duration = 0
+	spawn.Parent = worldFolder
+
+	return spawn
+end
+
 function WorldBuilder.buildArenas(worldFolder: Folder): { [number]: { center: Vector3, spots: { Vector3 } } }
 	local arenas = {}
 	local arenaFolder = Instance.new("Folder")
@@ -107,6 +127,8 @@ function WorldBuilder.buildAll(): { plots: any, arenas: any }
 		Material = Enum.Material.Grass,
 		Parent = worldFolder,
 	})
+
+	WorldBuilder.buildSpawn(worldFolder)
 
 	return {
 		plots = WorldBuilder.buildPlots(worldFolder),
