@@ -5,6 +5,7 @@ local ContextActionService = game:GetService("ContextActionService")
 local RunService = game:GetService("RunService")
 
 local GameConfig = require(ReplicatedStorage.Shared.GameConfig)
+local IconIds = require(ReplicatedStorage.Shared.IconIds)
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
 local requestSteal = remotes:WaitForChild("RequestSteal")
 local stealProgress = remotes:WaitForChild("StealProgress")
@@ -33,6 +34,15 @@ promptLabel.Parent = gui
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 8)
 corner.Parent = promptLabel
+
+local promptIcon = Instance.new("ImageLabel")
+promptIcon.Size = UDim2.new(0, 28, 0, 28)
+promptIcon.AnchorPoint = Vector2.new(0.5, 1)
+promptIcon.Position = UDim2.new(0.5, -140, 1, -146)
+promptIcon.BackgroundTransparency = 1
+promptIcon.Image = IconIds.StealSuccess
+promptIcon.Visible = false
+promptIcon.Parent = gui
 
 local barBg = Instance.new("Frame")
 barBg.Size = UDim2.new(0, 260, 0, 10)
@@ -107,8 +117,10 @@ stealProgress.OnClientEvent:Connect(function(progress: number, success: boolean?
 
 	if success == true then
 		promptLabel.Text = "Volé : " .. tostring(weaponName) .. " !"
+		promptIcon.Visible = true
 		task.delay(1.5, function()
 			promptLabel.Text = "Maintiens E pour voler"
+			promptIcon.Visible = false
 		end)
 	elseif success == false and progress == 0 then
 		barFill.Size = UDim2.new(0, 0, 1, 0)

@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local WeaponData = require(ReplicatedStorage.Shared.WeaponData)
+local IconIds = require(ReplicatedStorage.Shared.IconIds)
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
 
 local player = Players.LocalPlayer
@@ -35,9 +36,16 @@ panel.Visible = false
 panel.Parent = gui
 Instance.new("UICorner", panel).CornerRadius = UDim.new(0, 14)
 
+local titleIcon = Instance.new("ImageLabel")
+titleIcon.Size = UDim2.new(0, 28, 0, 28)
+titleIcon.Position = UDim2.new(0, 10, 0, 8)
+titleIcon.BackgroundTransparency = 1
+titleIcon.Image = IconIds.Purchase
+titleIcon.Parent = panel
+
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -20, 0, 32)
-title.Position = UDim2.new(0, 10, 0, 8)
+title.Size = UDim2.new(1, -54, 0, 32)
+title.Position = UDim2.new(0, 44, 0, 8)
 title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
 title.TextColor3 = Color3.new(1, 1, 1)

@@ -21,6 +21,22 @@ src/
   StarterPlayer/StarterPlayerScripts/Client/  -- HUD, toast de duel, vol, combat
 ```
 
+## Icônes pixel art des events
+
+Les icônes des toasts (défi de duel, victoire, défaite, vol réussi, achat en boutique) sont dans `assets/icons/` (PNG 512×512, fond transparent, généré en pixel art). Le code les référence via `rbxassetid://` dans `src/ReplicatedStorage/Shared/IconIds.luau` — il faut les uploader toi-même car Roblox n'accepte que ses propres assets hébergés :
+
+1. Dans Roblox Studio : onglet **Avatar** → **Import**, ou directement sur [create.roblox.com](https://create.roblox.com/) → **Créer** → **Décalcomanies**, uploade chaque PNG de `assets/icons/`.
+2. Récupère l'`assetId` donné par Roblox pour chaque image.
+3. Colle-le dans `IconIds.luau` à la place du `rbxassetid://0` correspondant.
+
+| Fichier | Utilisé pour |
+|---|---|
+| `duel_invite.png` | Toast de défi + début de duel |
+| `duel_win.png` | Popup de victoire |
+| `duel_lose.png` | Popup de défaite |
+| `steal_success.png` | Confirmation de vol réussi |
+| `purchase.png` | Titre du panneau boutique |
+
 ## Ouvrir le projet dans Roblox Studio
 
 1. Installe [Rojo](https://rojo.space/) (plugin Roblox Studio + CLI, ou via [Aftman](https://github.com/LPGhatguy/aftman)).

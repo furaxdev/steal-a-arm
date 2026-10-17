@@ -3,6 +3,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
+local IconIds = require(ReplicatedStorage.Shared.IconIds)
+
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local remotes = ReplicatedStorage:WaitForChild("Remotes")
@@ -24,20 +26,27 @@ local toastCorner = Instance.new("UICorner")
 toastCorner.CornerRadius = UDim.new(0, 14)
 toastCorner.Parent = toast
 
+local toastIcon = Instance.new("ImageLabel")
+toastIcon.Size = UDim2.new(0, 48, 0, 48)
+toastIcon.Position = UDim2.new(0, 10, 0, 8)
+toastIcon.BackgroundTransparency = 1
+toastIcon.Image = IconIds.DuelInvite
+toastIcon.Parent = toast
+
 local toastTitle = Instance.new("TextLabel")
-toastTitle.Size = UDim2.new(1, -20, 0, 30)
-toastTitle.Position = UDim2.new(0, 10, 0, 8)
+toastTitle.Size = UDim2.new(1, -70, 0, 30)
+toastTitle.Position = UDim2.new(0, 64, 0, 8)
 toastTitle.BackgroundTransparency = 1
 toastTitle.Font = Enum.Font.GothamBold
 toastTitle.TextColor3 = Color3.fromRGB(255, 120, 60)
 toastTitle.TextScaled = true
 toastTitle.TextXAlignment = Enum.TextXAlignment.Left
-toastTitle.Text = "⚔ Défi lancé !"
+toastTitle.Text = "Défi lancé !"
 toastTitle.Parent = toast
 
 local toastBody = Instance.new("TextLabel")
-toastBody.Size = UDim2.new(1, -20, 0, 26)
-toastBody.Position = UDim2.new(0, 10, 0, 38)
+toastBody.Size = UDim2.new(1, -70, 0, 26)
+toastBody.Position = UDim2.new(0, 64, 0, 38)
 toastBody.BackgroundTransparency = 1
 toastBody.Font = Enum.Font.Gotham
 toastBody.TextColor3 = Color3.new(1, 1, 1)
@@ -140,19 +149,33 @@ end)
 remotes:WaitForChild("DuelEnd").OnClientEvent:Connect(function(won: boolean, reward: number)
 	duelHud.Visible = false
 
+	local resultFrame = Instance.new("Frame")
+	resultFrame.Size = UDim2.new(0, 400, 0, 90)
+	resultFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+	resultFrame.Position = UDim2.new(0.5, 0, 0.35, 0)
+	resultFrame.BackgroundColor3 = won and Color3.fromRGB(40, 120, 60) or Color3.fromRGB(120, 40, 40)
+	resultFrame.Parent = gui
+	Instance.new("UICorner", resultFrame).CornerRadius = UDim.new(0, 14)
+
+	local resultIcon = Instance.new("ImageLabel")
+	resultIcon.Size = UDim2.new(0, 60, 0, 60)
+	resultIcon.Position = UDim2.new(0, 16, 0.5, -30)
+	resultIcon.BackgroundTransparency = 1
+	resultIcon.Image = won and IconIds.DuelWin or IconIds.DuelLose
+	resultIcon.Parent = resultFrame
+
 	local resultLabel = Instance.new("TextLabel")
-	resultLabel.Size = UDim2.new(0, 400, 0, 80)
-	resultLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-	resultLabel.Position = UDim2.new(0.5, 0, 0.35, 0)
-	resultLabel.BackgroundColor3 = won and Color3.fromRGB(40, 120, 60) or Color3.fromRGB(120, 40, 40)
+	resultLabel.Size = UDim2.new(1, -96, 1, -16)
+	resultLabel.Position = UDim2.new(0, 88, 0, 8)
+	resultLabel.BackgroundTransparency = 1
 	resultLabel.Font = Enum.Font.GothamBold
 	resultLabel.TextColor3 = Color3.new(1, 1, 1)
 	resultLabel.TextScaled = true
-	resultLabel.Text = (won and "🏆 Victoire ! +" or "💀 Défaite... +") .. reward .. " 💰"
-	resultLabel.Parent = gui
-	Instance.new("UICorner", resultLabel).CornerRadius = UDim.new(0, 14)
+	resultLabel.TextXAlignment = Enum.TextXAlignment.Left
+	resultLabel.Text = (won and "Victoire ! +" or "Défaite... +") .. reward .. " 💰"
+	resultLabel.Parent = resultFrame
 
 	task.delay(4, function()
-		resultLabel:Destroy()
+		resultFrame:Destroy()
 	end)
 end)
